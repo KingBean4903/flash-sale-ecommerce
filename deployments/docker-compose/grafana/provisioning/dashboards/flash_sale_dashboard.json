@@ -1,0 +1,65 @@
+{
+	"dashboard": {
+		"id": null,
+		"uid": "flashsale-dashboard",
+		"title": "Flash Sale Order Service",
+		"timezone": "browser",
+		"panels": [
+			{
+					"title": "Orders Placed",
+					"type": "stat",
+					"id": 1,
+					"datasource": "Prometheus",
+					"targets": [{
+							"expr": "orders_placed_total",
+							"format": "time_series"
+					}]
+			},
+			{
+				"title": "Duplicate Orders",
+				"type": "stat",
+				"id": 2,
+				"datasource": "Prometheus",
+				"targets": [{
+					"expr": "orders_duplicate_total"
+				}]
+			},
+			{
+					"title": "Redis Errors",
+					"type": "stat",
+					"id": 3,
+					"datasource": "Prometheus",
+					"targets": [{
+							"expr": "redis_errors_total"
+					}]
+			},
+			{
+			    "title": "Order processing latency",
+					"type": "timeseries",
+					"id": 4,
+					"datasource": "Prometheus",
+					"targets": [{
+							"expr": "order_processing_latency",
+							"legendFormat": "{{le}}"
+					}],
+					"fieldConfig": {
+						"defaults": {
+								"unit": "s"
+						}
+					}
+			},
+			{	
+				"title": "Orders per Second (Rate)",
+				"type": "timeseries",
+				"id": 5,
+				"datasource": "Prometheus",
+				"targets": [{
+						"expr": "rate(orders_placed_total[1m])"
+				}]
+			}
+		],
+		"schemaVersion": 37,
+		"version": 1
+	},
+	"overwrite": true
+}

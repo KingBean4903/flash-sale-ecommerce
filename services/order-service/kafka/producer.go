@@ -9,37 +9,38 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 )
 
-var  {
+var ( 
 	writer *kafka.Writer
 	topic = "orders"
-}
+)
 
 
 type OrderPlaced struct {
-	EventType string `json:"event_type"`
-	OrderID 	string `json:"order_id"`
-	UserID 		string `json:"event_type"`
+	EventType string  `json:"event_type"`
+	OrderID 	string  `json:"order_id"`
+	ItemID    string  `json:"item_id"`
+	UserID 		string  `json:"event_type"`
 	Total 		float64 `json:"order_id"`
-	Timestamp time.Now().Unix() `json:"order_id"`
+	Timestamp int64   `json:"order_id"`
 }
 
 
-func InitProducer(brokers []string) *Producer { 
+func InitProducer(brokerAddress string) { 
 	
-			return &Producer{
-					OrderWriter: &kafka.Writer{
-						Addr:  kafka.TCP(brokers...),
+			writer = kafka.NewWriter(kafka.WriterConfig{
+						Brokers:  []string{brokerAddress},
 						Topic: topic,
 						Balancer: &kafka.LeastBytes{},
-					}
-			}
+					})
+				log.Println("Producer initialized")
+			
 }
 
 
-func (p *Producer) EmitOrderPlaced(event OrderPlaced) error {
+func EmitOrderPlaced(event OrderPlaced) error {
 	
-	if writer == null {
-			return ErrProducerNotInititalized
+	if writer == nil {
+			return ErrProducerNotInitialized
 	}
 
 	data, err := json.Marshal(event)

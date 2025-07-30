@@ -2,14 +2,18 @@ package handler
 
 import (
 	"net/http"
+	"log"
+	"encoding/json"
+	"github.com/google/uuid"
+
 	"time"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 
-	"github.com/KingBean4903/flash-sale-platform/services/metrics"
-	"github.com/KingBean4903/flash-sale-platform/services/kafka"
+	"github.com/KingBean4903/flash-sale-ecommerce/services/order-service/metrics"
+	"github.com/KingBean4903/flash-sale-ecommerce/services/order-service/kafka"
 
-	redisDedup "github.com/KingBean4903/flash-sale-platform/services/redis"
+	redisDedup "github.com/KingBean4903/flash-sale-ecommerce/services/order-service/redis"
 )
 
 
@@ -32,21 +36,20 @@ func StartHTTPServer() {
 		}
 
 		if !ok {
-				metrics.DuplicateOrders.inc()
+				metrics.DuplicateOrders.Inc()
 				http.Error(w, "Duplicate order", http.StatusConflict)
 				return
 		}
 
-
 		orderID := uuid.New().String()
-		event := kafka.OrderPlacedEvent{
+		event := kafka.OrderPlaced{
 				OrderID: orderID,
 				UserID: userID,
 				ItemID: itemID,
 				Timestamp: time.Now().Unix(),
 		}
 
-		err := kafka.ProduceOrderPlaced(event)
+		err = kafka.EmitOrderPlaced(event)
 		if err != nil {
 				http.Error(w, "Failed to place Order", http.StatusInternalServerError)
 				return
@@ -58,11 +61,11 @@ func StartHTTPServer() {
 				"orderID": orderID,
 		})
 
-		metrics.OrdersPlaced.inc()
+		metrics.OrderPlaced.Inc()
 		metrics.OrderProcessingLatency.Observe(time.Since(start).Seconds())
 
 	})
 
 	log.Printf("Order service running on :8700....")
-	log.Fatalf(http.ListenAndServe(":8700", nil))
+	log.Fatal(http.ListenAndServe(":8700", nil))
 }

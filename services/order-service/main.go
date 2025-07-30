@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
-	"github.com/KingBean4903/flash-sale-platform/services/order-service/handler"
-	"github.com/KingBean4903/flash-sale-platform/services/order-service/redis"
-	"github.com/KingBean4903/flash-sale-platform/services/order-service/kafka"
+	"github.com/KingBean4903/flash-sale-ecommerce/services/order-service/handler"
+	"os"
+	"github.com/KingBean4903/flash-sale-ecommerce/services/order-service/redis"
+	"github.com/KingBean4903/flash-sale-ecommerce/services/order-service/kafka"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 			redisAddr = "localhost:6379"
 	}
 
-	kafka.InitProducer([]string{broker})
+	kafka.InitProducer(broker)
 
 	redis.InitRedis(redisAddr)
 
