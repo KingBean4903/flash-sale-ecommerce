@@ -85,7 +85,7 @@ services:
     image: grafana/k6:latest
     volumes:
       - ./k6:/scripts
-    entrypoint: ["k6", "run", "/tests/load-test/flash_sale_test.js"]
+    entrypoint: ["k6", "run", "/scripts/flash_sale_test.js"]
     depends_on:
       - order-service
     networks:

@@ -1,0 +1,41 @@
+apiVersion: k6
+kind: ConfigMap
+metadata:
+  name: k6-script
+  namespace: flash-sale
+data:
+  test.js: |
+    import http from 'k6/http';
+    import { check } from 'k6';
+    import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
+
+    export const options = { 
+      vus: 500,
+      duration: '15s'
+      thresholds: {
+          http_req_thresholds: ['rate<0.01'],
+          http_req_duration: ['p(95)<400'],
+        },
+    };
+
+    const ITEM_ID = 'ps5-v13';
+    
+    export default function() {
+        const url = 'http://order-service:8700/place-order';
+        const payload = JSON.stringify({
+            order_id: uuidv4(),
+            item_id: ITEM_ID,
+            quantity: 1,
+            user_id: `user-${__VU}-${__ITER}`,
+        });
+
+        const params = {
+            headers: {'Content-Type': 'application/json'}
+        };
+
+        const res = http.post(url, payload, params);
+
+        check(res,  {
+            'status is 200 or 409 (stock exhausted)': (r) => r.status === 200 || r.status === 409, 
+        });
+    }
