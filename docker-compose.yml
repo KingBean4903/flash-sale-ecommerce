@@ -1,0 +1,94 @@
+volumes:
+  grafana-data:
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+
+  zook1:
+    hostname: zook1
+    image: bitnami/zookeeper
+    restart: always
+    expose:
+      - "2181"
+    ports:
+      - "2181:2181"
+    environment:
+       ALLOW_ANONYMOUS_LOGIN: yes
+    networks:
+      - app-network
+
+  kafka-zoo:
+    hostname: kafka-zoo
+    image: bitnami/kafka
+    restart: always
+    environment:
+      KAFKA_CFG_ADVERTISED_HOST_NAME: kafka
+      KAFKA_CFG_ZOOKEEPER_CONNECT: zook1:2181
+      KAFKA_CFG_CONNECT_BOOTSTRAP_SERVERS: localhost:9092
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CFG_LISTENERS: PLAINTEXT://kafka-zoo:9092,CONTROLLER://kafka-zoo:29093
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-zoo:29093
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CLUSTER_ID: D1Eo5zq5R8G9iG93XvBh8Q 
+    depends_on:
+      - zook1
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  order-service:
+    build:
+      context: services/order-service
+    ports:
+      - "8700:8700"
+    environment:
+      - KAFKA_BROKER=kafka-zoo:9092
+      - REDIS_ADDR=redis:6379
+      - PRODUCE_TOPIC=orders
+    depends_on:
+      - redis
+      - kafka-zoo
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - app-network
+  
+  k6:
+    image: grafana/k6:latest
+    volumes:
+      - ./k6:/scripts
+    entrypoint: ["k6", "run", "/tests/load-test/flash_sale_test.js"]
+    depends_on:
+      - order-service
+    networks:
+      - app-network
+
+

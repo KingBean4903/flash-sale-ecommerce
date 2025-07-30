@@ -12,7 +12,7 @@ var (
 			Help: "Total no of orders placed",
 	})
 
-	DuplicateOrders = promauto.NewCounter(prometheus.CouterOpts{
+	DuplicateOrders = promauto.NewCounter(prometheus.CounterOpts{
 				Name: "orders_duplicate_total",
 				Help: "Total no of duplicate orders",
 	})
