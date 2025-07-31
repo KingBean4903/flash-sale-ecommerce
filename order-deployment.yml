@@ -7,11 +7,11 @@ spec:
   replicas: 2
   selector:
     matchLabels:
-      app: order-service
+      app.kubernetes.io/name: order-service
   template:
     metadata:
       labels:
-        app: order-service
+        app.kubernetes.io/name: order-service
     spec:
       containers:
         - name: order-service

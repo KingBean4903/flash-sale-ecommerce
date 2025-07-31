@@ -5,7 +5,7 @@ metadata:
   namespace: flash-sale
 spec:
   selector:
-    app: order-service
+    app.kubernetes.io/name: order-service
   ports:
     - protocol: TCP
       port: 8700
