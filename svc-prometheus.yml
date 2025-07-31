@@ -5,7 +5,7 @@ metadata:
   namespace: flash-sale
 spec:
   selector:
-    app: prometheus
+    app.kubernetes.io/name: prometheus
   ports:
     - port: 9090
       targetPort: 9090

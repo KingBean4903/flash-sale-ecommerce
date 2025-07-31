@@ -6,7 +6,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: order-service
+      app.kubernetes.io/name: order-service
   namespaceSelector:
     matchNames:
       - ecommerce
